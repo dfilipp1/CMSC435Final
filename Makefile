@@ -12,7 +12,7 @@ ifeq ($(MACHINE),Darwin)
 else
 	OPENGL_INC= -I/usr/X11R6/include
 	OPENGL_LIB= -L/usr/lib64 -lglut -lGL -lGLU
-	LLDLIBS = $(GLUT) -lGLU -lGL -lXmu -lXext -lX11 -lm
+	LLDLIBS = $(GLUT) -lGLU -lGL -lXext -lX11 -lm
 endif
 
 CXX=g++
@@ -23,7 +23,7 @@ LIBS= $(OPENGL_LIB) ${LLDLIBS}
 
 TARGETS = FinalProject
 
-SRCS = FinalProject.cpp trackball.cpp
+SRCS = FinalProject.cpp trackball.cpp CLUSTER_STRUCT.cpp
 
 default : $(TARGETS)
 
@@ -32,8 +32,8 @@ OBJS = $(SRCS:.cpp=.o)
 %.o: %.cpp
 	$(CXX) -c $(COMPILER_FLAGS) -o $@ $< $(INCLUDE)
 
-FinalProject: FinalProject.o trackball.o
-	$(CXX) $(COMPILER_FLAGS) $(LIBS) FinalProject.o trackball.o -o FinalProject
+FinalProject: FinalProject.o trackball.o CLUSTER_STRUCT.o
+	$(CXX) $(COMPILER_FLAGS) $(LIBS) FinalProject.o trackball.o CLUSTER_STRUCT.o -o FinalProject
 
 clean:
 	rm -f $(OBJS) $(TARGETS) *~ *.o
