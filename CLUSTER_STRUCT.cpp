@@ -18,6 +18,8 @@ using namespace std;
 //check distant for center points to each other
 int check_distant(double * coordinates, vector<POINT> *points);
 void k_mean_clustering(vector<POINT> * points, int cluster_nums);
+void recenter_mean(vector<POINT> * points,vector<CLUSTER> * clusters);
+double get_distant(double*p1, double* p2);
 
 //Keeping track of the bound for each coordinate components
 double max_x = 0;
@@ -58,6 +60,7 @@ vector<POINT> *load_points( char * file_name, int cluster_nums){
   ifstream file;
   file.open(file_name);
   string line;
+  double * coord;
   
   //Iterates line by line
   while(getline(file,line)){
@@ -65,7 +68,10 @@ vector<POINT> *load_points( char * file_name, int cluster_nums){
     vector<string> elems;
     split(line,' ',elems);
     
-    double coord[3] = {atof(elems[0].c_str()),atof(elems[1].c_str()),atof(elems[2].c_str())};
+    coord = new double(3);
+    coord[0] = atof(elems[0].c_str());
+    coord[1] = atof(elems[1].c_str());
+    coord[2] = atof(elems[2].c_str());
 
     //Keeping tracks on the min and max bound
     if (coord[0] > max_x) max_x = coord[0];
@@ -80,9 +86,10 @@ vector<POINT> *load_points( char * file_name, int cluster_nums){
     //Initialize a new point
     POINT * p = new POINT();
     p->coor = coord;
+    p->cluster = NULL;
     points->push_back(*p);
   }
-
+  
   k_mean_clustering(points, cluster_nums);
   return points;
 }
@@ -91,19 +98,21 @@ vector<POINT> *load_points( char * file_name, int cluster_nums){
 /*
  * Clustering the points into groups
  */
-void k_mean_clustering(vector<POINT> * points, int cluster_nums){
+void k_mean_clustering(vector<POINT> * coordPoint, int cluster_nums){
   
+  vector<POINT> *points = coordPoint;
   vector<CLUSTER> * clusters = new vector<CLUSTER>();
 
   //Ininitializing the cluster points to random location on the graph
   for (int i = 0; i < cluster_nums; i++){
-
+    
     CLUSTER *clus = new CLUSTER();
     clus->ref = i;
     
-    double center[3];
+    double * center;
     //While the cluster are certain distant apart
     do{
+      center = new double(3);
       //Getting the center by picking a number between 0 to (min + max)
       //To account for negative coordinates, we subtract by min
       double randX = fmod(rand(),fabs(max_x)+fabs(min_x))-fabs(min_x);
@@ -116,7 +125,93 @@ void k_mean_clustering(vector<POINT> * points, int cluster_nums){
       center[0] = randX; center[1] = randY; center[2] = randZ;
     }while(check_distant(center, points) == 1);
     clus->center = center;
+    clusters->push_back(*clus);
+
   }
+  int first_pass = 0;
+  int debug = 1;
+  //Iterate and begin clustering
+  do{
+    debug = 1;
+    
+    //Assign each point to a cluster group
+    for (int i = 0;i < points->size(); i ++){
+      int min_dist_idx = -1;
+      double distant;
+      
+      //Iterate through all the cluster mean
+      for (int j = 0;j < clusters->size(); j++){
+	CLUSTER *declus = &(*clusters)[j];	
+	double calcDistant = get_distant((*clusters)[j].center,(*points)[i].coor);
+	if (min_dist_idx == -1){
+	  min_dist_idx = j;
+	  distant = calcDistant;
+	}
+	//Get the minimum distant
+	else{
+	  if (distant > calcDistant){distant = calcDistant; min_dist_idx = j;}}
+      }
+
+      if ((*points)[i].cluster){
+	if ((*points)[i].cluster->ref != (*clusters)[min_dist_idx].ref)
+	  debug = 0;
+      }
+      else
+	debug = 0;
+      (*points)[i].cluster = &(*clusters)[min_dist_idx];
+    }//end of the big for loop
+    
+    cout<<"RUN"<<endl;
+    if (debug == 0)
+      recenter_mean(points,clusters);
+  }while(debug == 0);
+
+  /*
+  for (int i = 0; i < points->size(); i++){
+    cout<<"Points: "<<i<<" Ref:"<<(*points)[i].cluster->ref<<endl;
+    }*/
+}
+
+/*
+ * Get the distant between two 3D points
+ */
+double get_distant(double*p1, double* p2){
+  return sqrt(pow(p1[0] - p2[0],2) + pow(p1[1] - p2[1],2) + pow(p1[2] - p2[2],2));
+}
+
+/*
+ * Check the mean to see if the centoid need to be recomputed
+ */
+void recenter_mean(vector<POINT> * points,vector<CLUSTER> * clusters){
+  //Initializing the clusters new center
+  vector<double*> clusterCenter;
+  double * coord;
+  for (int i = 0; i < clusters->size(); i ++){
+    //[cum_x,cum_y,cum_z,total_added]
+    coord = new double(4);
+    coord[0]=0;coord[1]=0;coord[2]=0;coord[3]=0;
+    clusterCenter.push_back(coord);
+  }
+
+  //Summing all the x y z of the points belonging to a cluster
+  for (int i = 0; i < points->size(); i ++){
+    CLUSTER * cluster = (*points)[i].cluster;
+    //Coordinate of the points 
+    double *coord = (*points)[i].coor; 
+    //Get the index of the reference cluster
+    double *clsCtr = clusterCenter[cluster->ref];
+    //cout<<"Ref: "<<cluster->ref<<endl;
+    clsCtr[0]+=coord[0]; clsCtr[1]+=coord[1]; clsCtr[2]+=coord[2]; clsCtr[3]+=1; 
+  }
+
+  //Getting the average and also setting the new center
+  for (int i = 0; i < clusters->size(); i++){
+    ((*clusters)[i].center)[0] = (clusterCenter[i])[0] / (clusterCenter[i])[3];
+    ((*clusters)[i].center)[1] = (clusterCenter[i])[1] / (clusterCenter[i])[3];
+    ((*clusters)[i].center)[2] = (clusterCenter[i])[2] / (clusterCenter[i])[3];
+    cout<<"New cntr "<<i<<" X:"<<((*clusters)[i].center)[0]<<" Y:"<<((*clusters)[i].center)[1]<<" Z"<<((*clusters)[i].center)[2]<<endl;
+  }
+  
 }
 
 /* 

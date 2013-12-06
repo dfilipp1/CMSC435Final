@@ -20,6 +20,7 @@
 
 void init(char * filename, int clusters){
   vector<POINT> *points = load_points(filename, clusters);
+  printf("HELLO WORLD\n");
 }
 
 void display(void){
@@ -73,9 +74,9 @@ int main(int argc, char *argv[]){
   glutInitWindowSize (500, 500);
   glutInitWindowPosition (100, 100);
   glutCreateWindow (argv[0]);
-
-  init(filename,num_of_clusters);
   
+  init(filename,num_of_clusters);
+
   glutDisplayFunc(display);
   glutReshapeFunc(reshape);
   glutMouseFunc(mouse);
