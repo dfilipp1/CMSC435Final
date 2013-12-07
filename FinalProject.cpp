@@ -18,25 +18,71 @@
 
 #include "CLUSTER_STRUCT.hpp"
 
-void init(char * filename, int clusters){
-  vector<POINT> *points = load_points(filename, clusters);
-  printf("HELLO WORLD\n");
-}
 
-void display(void){
+vector<POINT> *points;
+GLint mouseButton = -1;
+
+void init(char * filename, int clusters){
+  //Getting the clustered points
+  glClearColor(0,0,0,0);
+  tbInit(GLUT_LEFT_BUTTON);
+  points = load_points(filename, clusters);
   
 }
 
-void reshape(int w, int h){
+void display(void){
+  glClear(GL_COLOR_BUFFER_BIT);
 
+  glPushMatrix();
+  tbMatrix();
+  //Drawing the points
+  glPointSize(5);
+  glBegin(GL_POINTS);
+  for (int i = 0; i < points->size(); i++){
+    double * coordinates = (*points)[i].coor;
+    if ((*points)[i].cluster->ref == 0)
+      glColor3f(1,1,1);
+    else if ((*points)[i].cluster->ref == 1)
+      glColor3f(1,0,0);
+    else if ((*points)[i].cluster->ref == 2)
+      glColor3f(0,1,0);
+    else if ((*points)[i].cluster->ref == 3)
+      glColor3f(0,0,1);
+    else if ((*points)[i].cluster->ref == 4)
+      glColor3f(0,1,1);
+    
+    glVertex3f(coordinates[0]/40.0,coordinates[1]/40.0,coordinates[2]/40.0);
+    //cout<<coordinates[0]<<" "<<coordinates[1]<<" "<<coordinates[2]<<endl;
+  }
+  
+  glEnd();
+  glPopMatrix();
+  
+  glutSwapBuffers();
+}
+
+void reshape(int w, int h){
+  tbReshape(w, h);
+  cout<<"Reshape"<<endl;
+  glViewport(0, 0, w, h);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(60.0, (GLdouble)w/h, 0.01,1000);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  glTranslatef(0, 0, -10+zoom);
 }
 
 void mouse(int button, int state, int x, int y){
   
+  mouseButton=button;
+  tbMouse(button, state, x,y);
+  glutPostRedisplay();
 }
 
 void motion(int x, int y){
-  
+  tbMotion(x,y,mouseButton);
+  glutPostRedisplay();
 }
 
 void keyboard(unsigned char key, int x, int y){
@@ -70,7 +116,7 @@ int main(int argc, char *argv[]){
   }
   
   glutInit(&argc, argv);
-  glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+  glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB);
   glutInitWindowSize (500, 500);
   glutInitWindowPosition (100, 100);
   glutCreateWindow (argv[0]);
@@ -83,8 +129,6 @@ int main(int argc, char *argv[]){
   glutMotionFunc(motion);
   
   glutKeyboardFunc(keyboard);
-  glutSpecialFunc(special);
-  
   glutMainLoop();
   return 0;
 }

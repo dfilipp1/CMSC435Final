@@ -89,6 +89,8 @@ vector<POINT> *load_points( char * file_name, int cluster_nums){
     p->cluster = NULL;
     points->push_back(*p);
   }
+
+  file.close();
   
   k_mean_clustering(points, cluster_nums);
   return points;
@@ -161,7 +163,6 @@ void k_mean_clustering(vector<POINT> * coordPoint, int cluster_nums){
       (*points)[i].cluster = &(*clusters)[min_dist_idx];
     }//end of the big for loop
     
-    cout<<"RUN"<<endl;
     if (debug == 0)
       recenter_mean(points,clusters);
   }while(debug == 0);
@@ -188,11 +189,11 @@ void recenter_mean(vector<POINT> * points,vector<CLUSTER> * clusters){
   double * coord;
   for (int i = 0; i < clusters->size(); i ++){
     //[cum_x,cum_y,cum_z,total_added]
-    coord = new double(4);
+    coord =(double*) malloc(4*sizeof(double));
     coord[0]=0;coord[1]=0;coord[2]=0;coord[3]=0;
     clusterCenter.push_back(coord);
   }
-
+  
   //Summing all the x y z of the points belonging to a cluster
   for (int i = 0; i < points->size(); i ++){
     CLUSTER * cluster = (*points)[i].cluster;
@@ -209,7 +210,7 @@ void recenter_mean(vector<POINT> * points,vector<CLUSTER> * clusters){
     ((*clusters)[i].center)[0] = (clusterCenter[i])[0] / (clusterCenter[i])[3];
     ((*clusters)[i].center)[1] = (clusterCenter[i])[1] / (clusterCenter[i])[3];
     ((*clusters)[i].center)[2] = (clusterCenter[i])[2] / (clusterCenter[i])[3];
-    cout<<"New cntr "<<i<<" X:"<<((*clusters)[i].center)[0]<<" Y:"<<((*clusters)[i].center)[1]<<" Z"<<((*clusters)[i].center)[2]<<endl;
+    //cout<<"New cntr "<<i<<" X:"<<((*clusters)[i].center)[0]<<" Y:"<<((*clusters)[i].center)[1]<<" Z"<<((*clusters)[i].center)[2]<<endl;
   }
   
 }
