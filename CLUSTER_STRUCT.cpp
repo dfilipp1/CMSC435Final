@@ -62,8 +62,11 @@ vector<POINT> *load_points( char * file_name, int cluster_nums){
   string line;
   double * coord;
   
+  int num_of_points = 0;
+
   //Iterates line by line
   while(getline(file,line)){
+    num_of_points++;
     //Vector to split the elems
     vector<string> elems;
     split(line,' ',elems);
@@ -92,7 +95,11 @@ vector<POINT> *load_points( char * file_name, int cluster_nums){
 
   file.close();
   
-  k_mean_clustering(points, cluster_nums);
+  int num_of_cluster = sqrt(num_of_points/2);
+
+  k_mean_clustering(points, num_of_cluster);
+  cout<<"The number of file is: "<<num_of_points<<endl;
+  cout<<"The number of cluster is: "<<num_of_cluster<<endl;
   return points;
 }
 

@@ -37,8 +37,9 @@ void display(void){
   tbMatrix();
   //Drawing the points
   glPointSize(5);
-  glBegin(GL_POINTS);
+ 
   for (int i = 0; i < points->size(); i++){
+    glBegin(GL_POINTS);
     double * coordinates = (*points)[i].coor;
     if ((*points)[i].cluster->ref == 0)
       glColor3f(1,1,1);
@@ -50,12 +51,15 @@ void display(void){
       glColor3f(0,0,1);
     else if ((*points)[i].cluster->ref == 4)
       glColor3f(0,1,1);
-    
+    else if ((*points)[i].cluster->ref == 5)
+      glColor3f(1,0,1);
+
     glVertex3f(coordinates[0]/40.0,coordinates[1]/40.0,coordinates[2]/40.0);
+    glEnd();
     //cout<<coordinates[0]<<" "<<coordinates[1]<<" "<<coordinates[2]<<endl;
   }
   
-  glEnd();
+ 
   glPopMatrix();
   
   glutSwapBuffers();
@@ -93,6 +97,7 @@ void keyboard(unsigned char key, int x, int y){
   default:
     break;
   }
+  glutPostRedisplay();
 }
 
 void special(int key, int x, int y){
@@ -105,14 +110,15 @@ int main(int argc, char *argv[]){
   int num_of_clusters;
 
   //Make sure that there is a command-line argument
-  if (argc < 3) {
+  if (argc < 2) {
     std::cout << "usage: FinalProject <datafile> <number of clusters>" << std::endl;
     exit(-1);
   }
   else {
     //The first command-line arg is the name of the file to use
     filename = argv[1];
-    num_of_clusters = atoi(argv[2]);
+    //num_of_clusters = atoi(argv[2]);
+    num_of_clusters = 2; //Just for debugging, the acutal number of clusters is determine after file read
   }
   
   glutInit(&argc, argv);
