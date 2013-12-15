@@ -23,7 +23,7 @@ LIBS= $(OPENGL_LIB) ${LLDLIBS}
 
 TARGETS = FinalProject
 
-SRCS = FinalProject.cpp trackball.cpp CLUSTER_STRUCT.cpp
+SRCS = FinalProject.cpp trackball.cpp CLUSTER_STRUCT.cpp bundling.cpp
 
 default : $(TARGETS)
 
@@ -32,8 +32,8 @@ OBJS = $(SRCS:.cpp=.o)
 %.o: %.cpp
 	$(CXX) -c $(COMPILER_FLAGS) -o $@ $< $(INCLUDE)
 
-FinalProject: FinalProject.o trackball.o CLUSTER_STRUCT.o
-	$(CXX) $(COMPILER_FLAGS) $(LIBS) FinalProject.o trackball.o CLUSTER_STRUCT.o -o FinalProject
+FinalProject: FinalProject.o trackball.o CLUSTER_STRUCT.o bundling.o
+	$(CXX) $(COMPILER_FLAGS) $(LIBS) FinalProject.o trackball.o bundling.o CLUSTER_STRUCT.o -o FinalProject
 
 clean:
 	rm -f $(OBJS) $(TARGETS) *~ *.o
