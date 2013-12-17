@@ -33,7 +33,8 @@ int main_window;
 int scaleunit = 0;
 
 int draw_center = 0;
-int toggle_color = 1;
+int toggle_color = 0;
+int toggle_tensor = 1;
 
 float con_val[74][74];
 
@@ -146,7 +147,7 @@ void display(void){
 	Ctrl[2][2] = centers[(*other_cluster).cluster->ref][2];
 
 	if (toggle_color == 1){
-	  draw_curve(Ctrl,(&(*this_cluster)),(&(*other_cluster)));
+	  draw_curve(Ctrl,(&(*this_cluster)),(&(*other_cluster)),con_val[this_point_count][other_point_count], toggle_tensor);
 	}
 	free(this_center);
 	free(other_center);
@@ -237,6 +238,11 @@ void keyboard(unsigned char key, int x, int y){
       toggle_color = 0;
     else
       toggle_color = 1;
+  case 'b':
+  	if (toggle_tensor == 1)
+	  toggle_tensor = 0;
+	else
+	  toggle_tensor = 1;
   default:
     break;
   }
@@ -339,6 +345,7 @@ int main(int argc, char *argv[]){
   //Adding checkboxs for toggling colors
   glui->add_checkbox_to_panel(control,"Bundle Color",&toggle_color,600,control_callback);
   glui->add_checkbox_to_panel(control,"Cluster center",&draw_center,700,control_callback);
+  glui->add_checkbox_to_panel(control,"Tensor Color",&toggle_tensor,800,control_callback);
 
   ///////////////////////////////////////////////////////////
   glutMainLoop();

@@ -74,7 +74,7 @@ GLfloat BezMatrix[4][4] = {
 
 
 ///Draw a bezier curve.
-void draw_curve(GLfloat CtrlPoints[4][3],POINT *p1, POINT *p2) {
+void draw_curve(GLfloat CtrlPoints[4][3],POINT *p1, POINT *p2, float con_val, int tensor) {
     //Local Variables
     float u;
     GLfloat xx, yy, zz;
@@ -118,7 +118,13 @@ void draw_curve(GLfloat CtrlPoints[4][3],POINT *p1, POINT *p2) {
         zz = 0;
         for(i=0; i < 4; i++)
 	  zz += uu[i] * BP[i][2];
-	double *rgb = getRGB(accumulate,1,1);
+	double *rgb;
+	if(tensor){
+	  rgb = getRGB(120*con_val,1,1);
+	}
+	else{
+	  rgb = getRGB(accumulate,1,1);
+	}
 	accumulate+=diff;
 	if (accumulate > 360){
 	  accumulate-=360;
